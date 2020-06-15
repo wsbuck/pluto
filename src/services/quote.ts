@@ -3,10 +3,8 @@ import axios from 'axios';
 import { FINNHUB_URL, FINNHUB_API_KEY } from '../config';
 import IStockQuoteResponse from '../interfaces/IStockQuoteResponse';
 
-
 interface IQuoteService {
   fetchStockQuote(ticker: string): Promise<number>;
-
 }
 
 export default class QuoteService implements IQuoteService {
@@ -18,5 +16,4 @@ export default class QuoteService implements IQuoteService {
     const data: IStockQuoteResponse = resp.data
     return data.c;
   }
-
 }

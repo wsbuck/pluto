@@ -1,7 +1,5 @@
 import { Router } from 'express';
 import QuoteService from '../../services/quote';
-import axios from 'axios';
-import { FINNHUB_URL, FINNHUB_API_KEY } from '../../config';
 
 const route = Router();
 const quoteService = new QuoteService();
