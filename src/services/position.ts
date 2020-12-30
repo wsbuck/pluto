@@ -2,6 +2,9 @@ import redis from 'redis';
 import { promisify } from 'util';
 import IPosition from '../interfaces/IPosition';
 import { REDIS_HOST, REDIS_PORT } from '../config';
+import QuoteService from '../services/quote';
+
+const quoteService = new QuoteService();
 
 interface IPositionService {
   createPosition(position: IPosition): Promise<void>;
@@ -10,8 +13,8 @@ interface IPositionService {
 
 export default class PositionService implements IPositionService {
   redis: redis.RedisClient;
-  lpush: () => Promise<number>;
   lrange: (key: string, start: number, end: number) => Promise<string[]>;
+  lpush: (key: string, value: string) => Promise<number>;
 
   constructor() {
     this.redis = redis.createClient({
@@ -19,20 +22,25 @@ export default class PositionService implements IPositionService {
       host: REDIS_HOST || 'localhost',
     });
 
-    this.lpush = promisify(this.redis.lpush);
-    this.lrange = promisify(this.redis.lrange);
+    this.lpush = promisify(this.redis.lpush).bind(this.redis);
+    this.lrange = promisify(this.redis.lrange).bind(this.redis);
   }
 
   async createPosition(position: IPosition): Promise<void> {
     const key = `${position.user}-positions`;
-    this.redis.lpush(key, JSON.stringify(position));
+    await this.lpush(key, JSON.stringify(position));
   }
 
   async getPositions(user: string): Promise<IPosition[]> {
     const key = `${user}-positions`;
-    const positions: IPosition[] = await this.lrange(key, 0, -1)
-      .then((values) => values.map((value) => JSON.parse(value)));
 
+    const values = await this.lrange(key, 0, -1);
+    const positions = values.map((value) => JSON.parse(value)) as IPosition[];
+    for (let i = 0; i < positions.length; i++) {
+      const position = positions[i];
+      const currentPrice = await quoteService.fetchStockQuote(position.ticker);
+      position.currentPrice = currentPrice;
+    }
     return positions;
   }
 

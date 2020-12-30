@@ -4,6 +4,7 @@ export enum Sentiment {
 }
 
 export default interface IPosition {
+  currentPrice?: number;
   dateCreated: number;
   user: string;
   price: number;
