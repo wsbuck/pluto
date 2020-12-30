@@ -32,7 +32,7 @@ route.post('/bull', async (req, res) => {
     await positionService.createPosition(position);
     res.json({
       response_type: 'in_channel',
-      text: `${ticker} added as 🐂 position for ${position.user}`,
+      text: `${ticker} added as 🐂 position for <@${position.user}>`,
     });
   } catch (e) {
     console.error('error', e);
@@ -89,6 +89,8 @@ route.post('/get', async (req, res) => {
 
   try {
     const positions = await positionService.getPositions(userId);
+    const bullishPositions = positions.filter(position => position.sentiment === Sentiment.bullish);
+    const bearishPositions = positions.filter(position => position.sentiment === Sentiment.bearish);
     res.json({
       response_type: 'in_channel',
       blocks: [
@@ -96,13 +98,13 @@ route.post('/get', async (req, res) => {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `Below are the current recommended *BULLISH* for user <@${userId}>`
+            text: `Below are the current recommended *BULLISh* for user <@${userId}>`
           }
         },
         {
           type: 'divider',
         },
-        ...positions.filter((position) => position.sentiment === Sentiment.bullish).map((position) => {
+        ...bullishPositions.map((position) => {
           return {
             type: 'section',
             text: {
@@ -120,13 +122,13 @@ route.post('/get', async (req, res) => {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `Below are the current recommended *BEARISH* for user ${userId}`
+            text: `Below are the current recommended *BEARISH* for user <@${userId}>`
           }
         },
         {
           type: 'divider',
         },
-        ...positions.filter((position) => position.sentiment === Sentiment.bearish).map((position) => {
+        ...bearishPositions.map((position) => {
           return {
             type: 'section',
             text: {
