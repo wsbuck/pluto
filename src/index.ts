@@ -7,6 +7,7 @@ dotenv.config();
 
 import quoteRouter from './api/routes/quote';
 import eventRouter from './api/routes/event';
+import positionRouter from './api/routes/position';
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/', eventRouter);
 app.use('/quote', quoteRouter);
+app.use('/position', positionRouter);
 
 const port = process.env.PORT || 8000;
 app.listen(port, () => console.log(`listening on port: ${port}`));
