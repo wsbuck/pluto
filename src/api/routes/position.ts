@@ -7,7 +7,7 @@ const route = Router();
 const quoteService = new QuoteService();
 const positionService = new PositionService();
 
-route.post('/buy', async (req, res) => {
+route.post('/bull', async (req, res) => {
   res.status(200);
   const { user_id, text } = req.body;
 
@@ -26,8 +26,8 @@ route.post('/buy', async (req, res) => {
       dateCreated: Date.now(),
       user: user_id,
       price: quote,
-      sentiment: Sentiment.buy,
-      ticker,
+      sentiment: Sentiment.bullish,
+      ticker: ticker.toUpperCase(),
     }
     await positionService.createPosition(position);
     res.json({
@@ -45,7 +45,7 @@ route.post('/buy', async (req, res) => {
 
 });
 
-route.post('/sell', async (req, res) => {
+route.post('/bear', async (req, res) => {
   res.status(200);
   const { user_id, text } = req.body;
 
@@ -64,8 +64,8 @@ route.post('/sell', async (req, res) => {
       dateCreated: Date.now(),
       user: user_id,
       price: quote,
-      sentiment: Sentiment.sell,
-      ticker,
+      sentiment: Sentiment.bearish,
+      ticker: ticker.toUpperCase(),
     }
     await positionService.createPosition(position);
     res.json({
@@ -88,9 +88,7 @@ route.post('/get', async (req, res) => {
   const { user_id: userId } = req.body;
 
   try {
-    console.log('userId', userId);
     const positions = await positionService.getPositions(userId);
-    console.log('positions', positions);
     res.json({
       response_type: 'in_channel',
       blocks: [
@@ -98,22 +96,44 @@ route.post('/get', async (req, res) => {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `Below are the current recommended *BUYS* for user ${userId}`
+            text: `Below are the current recommended *BULLISH* for user ${userId}`
           }
         },
         {
           type: 'divider',
         },
-        positions.map((position) => {
+        ...positions.filter((position) => position.sentiment === Sentiment.bullish).map((position) => {
           return {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: `
-                *${position.ticker}*\n
-                Date Recommended: ${position.dateCreated}\n
-                Initial Price: ${position.price}\n
-                Current Price: ${position.currentPrice}\n
+              text: `*${position.ticker}*
+                Date Recommended: ${position.dateCreated}
+                Initial Price: ${position.price}
+                Current Price: ${position.currentPrice}
+              `
+            },
+          };
+        }),
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `Below are the current recommended *BEARISH* for user ${userId}`
+          }
+        },
+        {
+          type: 'divider',
+        },
+        ...positions.filter((position) => position.sentiment === Sentiment.bearish).map((position) => {
+          return {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `*${position.ticker}*
+                Date Recommended: ${position.dateCreated}
+                Initial Price: ${position.price}
+                Current Price: ${position.currentPrice}
               `
             },
           };

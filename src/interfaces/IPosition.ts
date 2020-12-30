@@ -1,6 +1,6 @@
 export enum Sentiment {
-  buy = 'BUY',
-  sell = 'sell',
+  bearish = 'BEARISH',
+  bullish = 'BULLISH',
 }
 
 export default interface IPosition {

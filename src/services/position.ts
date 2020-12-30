@@ -28,6 +28,16 @@ export default class PositionService implements IPositionService {
 
   async createPosition(position: IPosition): Promise<void> {
     const key = `${position.user}-positions`;
+    const positions = await this.getPositions(position.user);
+    const exists = positions.some(existingPosition => (
+        position.ticker === existingPosition.ticker &&
+        position.sentiment === existingPosition.sentiment
+    ));
+
+    if (exists) {
+      return;
+    }
+
     await this.lpush(key, JSON.stringify(position));
   }
 
