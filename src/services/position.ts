@@ -15,6 +15,7 @@ export default class PositionService implements IPositionService {
   redis: redis.RedisClient;
   lrange: (key: string, start: number, end: number) => Promise<string[]>;
   lpush: (key: string, value: string) => Promise<number>;
+  lrem: (key: string, count: number, value: string) => Promise<number>;
 
   constructor() {
     this.redis = redis.createClient({
@@ -24,11 +25,28 @@ export default class PositionService implements IPositionService {
 
     this.lpush = promisify(this.redis.lpush).bind(this.redis);
     this.lrange = promisify(this.redis.lrange).bind(this.redis);
+    this.lrem = promisify(this.redis.lrem).bind(this.redis);
   }
 
   async createPosition(position: IPosition): Promise<void> {
     const key = `${position.user}-positions`;
     const positions = await this.getPositions(position.user);
+
+    for (const existingPosition of positions) {
+      if (existingPosition.ticker === position.ticker) {
+        if (existingPosition.sentiment === position.sentiment) {
+          return;
+        }
+
+        const deletePosition = { ...existingPosition };
+        delete deletePosition.currentPrice;
+
+        await this.lrem(key, 1, JSON.stringify(deletePosition));
+        return;
+      }
+
+    }
+
     const exists = positions.some(existingPosition => (
         position.ticker === existingPosition.ticker &&
         position.sentiment === existingPosition.sentiment

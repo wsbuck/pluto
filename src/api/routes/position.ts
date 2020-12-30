@@ -32,13 +32,13 @@ route.post('/bull', async (req, res) => {
     await positionService.createPosition(position);
     res.json({
       response_type: 'in_channel',
-      text: `${ticker} added as BUY position`,
+      text: `${ticker} added as 🐂 position for ${position.user}`,
     });
   } catch (e) {
     console.error('error', e);
     res.json({
       response_type: 'in_response',
-      text: 'Unable to create buy position'
+      text: 'Unable to create bullish position'
     });
 
   }
@@ -70,7 +70,7 @@ route.post('/bear', async (req, res) => {
     await positionService.createPosition(position);
     res.json({
       response_type: 'in_channel',
-      text: `${ticker} added as BUY position`,
+      text: `${ticker} added as 🐻 position for <@${position.user}>`,
     });
   } catch (e) {
     console.error('error', e);
@@ -96,7 +96,7 @@ route.post('/get', async (req, res) => {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `Below are the current recommended *BULLISH* for user ${userId}`
+            text: `Below are the current recommended *BULLISH* for user <@${userId}>`
           }
         },
         {
@@ -108,9 +108,10 @@ route.post('/get', async (req, res) => {
             text: {
               type: 'mrkdwn',
               text: `*${position.ticker}*
-                Date Recommended: ${position.dateCreated}
-                Initial Price: ${position.price}
-                Current Price: ${position.currentPrice}
+                Date Recommended: ${new Date(position.dateCreated).toLocaleString()}
+                Initial Price: $${position.price}
+                Current Price: $${position.currentPrice}
+                Gain / Loss: ${(position.currentPrice - position.price) / position.price}
               `
             },
           };
@@ -131,9 +132,10 @@ route.post('/get', async (req, res) => {
             text: {
               type: 'mrkdwn',
               text: `*${position.ticker}*
-                Date Recommended: ${position.dateCreated}
-                Initial Price: ${position.price}
-                Current Price: ${position.currentPrice}
+                Date Recommended: ${new Date(position.dateCreated).toLocaleString()}
+                Initial Price: $${position.price}
+                Current Price: $${position.currentPrice}
+                Gain / Loss: ${(position.currentPrice - position.price) / position.price}
               `
             },
           };
