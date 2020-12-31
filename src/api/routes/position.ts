@@ -87,16 +87,13 @@ route.post('/get', async (req, res) => {
     const bullishPositions = positions.filter(position => position.sentiment === Sentiment.bullish);
     const bearishPositions = positions.filter(position => position.sentiment === Sentiment.bearish);
     const blocks = [
-      bullishPositions.length > 0 && {
+      ...(bullishPositions.length > 0 ? [{
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `Below are the current recommended *BULLISH* for user <@${userId}>`
-        }
-      },
-      bullishPositions.length > 0 && {
-        type: 'divider',
-      },
+          text: `*Bullish Picks <@${userId}>*`,
+        },
+      }, { type: 'divider' }] : []),
       ...bullishPositions.map((position) => {
         const gainPercentage = (
           (position.currentPrice - position.price) / position.price * 100
@@ -105,9 +102,9 @@ route.post('/get', async (req, res) => {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            color: Number.parseFloat(gainPercentage) > 0 ? 'good' : 'danger',
+            // color: Number.parseFloat(gainPercentage) > 0 ? 'good' : 'danger',
             text: `*${position.ticker}*
-                Date Recommended: ${new Date(position.dateCreated).toDateString()}
+                Date Recommended: <!date^${(position.dateCreated / 1000).toFixed(0)}^{date_short}|unknown>
                 Initial Price: $${position.price}
                 Current Price: $${position.currentPrice}
                 Gain / Loss: ${gainPercentage}%
@@ -115,27 +112,24 @@ route.post('/get', async (req, res) => {
           },
         };
       }),
-      bearishPositions.length > 0 && {
+      ...(bearishPositions.length > 0 ? [{
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `Below are the current recommended *BEARISH* for user <@${userId}>`
-        }
-      },
-      bearishPositions.length > 0 && {
-        type: 'divider',
-      },
+          text: `Bearish Picks for <@${userId}>`,
+        },
+      }, { type: 'divider' }] : []),
       ...bearishPositions.map((position) => {
         const gainPercentage = (
           (position.currentPrice - position.price) / position.price * 100
         ).toFixed(2);
         return {
           type: 'section',
-          color: Number.parseFloat(gainPercentage) > 0 ? 'good' : 'danger',
+          // color: Number.parseFloat(gainPercentage) > 0 ? 'good' : 'danger',
           text: {
             type: 'mrkdwn',
             text: `*${position.ticker}*
-                Date Recommended: ${new Date(position.dateCreated).toDateString()}
+                Date Recommended: <!date^${(position.dateCreated / 1000).toFixed(0)}^{date_short}|unknown>
                 Initial Price: $${position.price}
                 Current Price: $${position.currentPrice}
                 Gain / Loss: ${gainPercentage}%
@@ -145,7 +139,7 @@ route.post('/get', async (req, res) => {
       }),
     ];
     if (blocks.length === 0) {
-      blocks.push({ type: 'section', color: 'warning', text: { type: 'mrkdwn', text: 'No Positions'}});
+      blocks.push({ type: 'section', text: { type: 'mrkdwn', text: 'No Positions'}});
     }
     messageService.sendBlockMessage(blocks, responseUrl);
   } catch (e) {
