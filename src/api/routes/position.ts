@@ -69,10 +69,11 @@ route.post('/bear', async (req, res) => {
 route.post('/get', async (req, res) => {
   res.status(200).send('');
 
-  const { user_id: userId, response_url: responseUrl } = req.body;
+  const { user_id: userId, response_url: responseUrl, text } = req.body;
 
   try {
-    const positions = await positionService.getPositions(userId);
+    const user = text || userId;
+    const positions = await positionService.getPositions(user);
     const bullishPositions = positions.filter(position => position.sentiment === Sentiment.bullish);
     const bearishPositions = positions.filter(position => position.sentiment === Sentiment.bearish);
     const blocks = [
@@ -80,7 +81,7 @@ route.post('/get', async (req, res) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `Below are the current recommended *BULLISH* for user <@${userId}>`
+          text: `Below are the current recommended *BULLISH* for user <@${user}>`
         }
       },
       {
@@ -95,7 +96,7 @@ route.post('/get', async (req, res) => {
                 Date Recommended: ${new Date(position.dateCreated).toLocaleString()}
                 Initial Price: $${position.price}
                 Current Price: $${position.currentPrice}
-                Gain / Loss: ${(position.currentPrice - position.price) / position.price}
+                Gain / Loss: ${(position.currentPrice - position.price) / position.price * 100}%
               `
           },
         };
@@ -104,7 +105,7 @@ route.post('/get', async (req, res) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `Below are the current recommended *BEARISH* for user <@${userId}>`
+          text: `Below are the current recommended *BEARISH* for user <@${user}>`
         }
       },
       {
@@ -119,7 +120,7 @@ route.post('/get', async (req, res) => {
                 Date Recommended: ${new Date(position.dateCreated).toLocaleString()}
                 Initial Price: $${position.price}
                 Current Price: $${position.currentPrice}
-                Gain / Loss: ${(position.currentPrice - position.price) / position.price}
+                Gain / Loss: ${(position.currentPrice - position.price) / position.price * 100}%
               `
           },
         };
