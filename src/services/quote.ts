@@ -8,12 +8,10 @@ interface IQuoteService {
 }
 
 export default class QuoteService implements IQuoteService {
-  constructor() {
-  }
 
   async fetchStockQuote(ticker: string): Promise<number> {
     const resp = await axios.get(`${FINNHUB_URL}/quote?token=${FINNHUB_API_KEY}&symbol=${ticker?.toUpperCase()}`);
-    const data: IStockQuoteResponse = resp.data
+    const data: IStockQuoteResponse = resp.data;
     return data.c;
   }
 }

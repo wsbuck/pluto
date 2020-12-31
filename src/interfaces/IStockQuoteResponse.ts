@@ -5,4 +5,5 @@ export default interface IStockQuoteResponse {
   o: number;   // open price of the day
   pc: number;  // previous close price
   t: number;   // time
+// eslint-disable-next-line semi
 }

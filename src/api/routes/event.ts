@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import MessageService from '../../services/message';
-import { IInterpretMessageValue } from '../../interfaces/IInterpretMessageValue';
 
 const route = Router();
 const messageService = new MessageService();

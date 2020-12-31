@@ -10,4 +10,5 @@ export default interface IPosition {
   price: number;
   sentiment: Sentiment;
   ticker: string;
+// eslint-disable-next-line semi
 }

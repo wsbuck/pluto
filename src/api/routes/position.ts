@@ -18,7 +18,7 @@ route.post('/bull', async (req, res) => {
   try {
     const quote = await quoteService.fetchStockQuote(ticker);
     if (quote === 0) {
-      throw new Error('price equalled 0, probably incorrect ticker')
+      throw new Error('price equalled 0, probably incorrect ticker');
     }
     const position: IPosition = {
       dateCreated: Date.now(),
@@ -26,7 +26,7 @@ route.post('/bull', async (req, res) => {
       price: quote,
       sentiment: Sentiment.bullish,
       ticker: ticker.toUpperCase(),
-    }
+    };
     await positionService.createPosition(position);
 
     await messageService.sendMessage(
@@ -50,7 +50,7 @@ route.post('/bear', async (req, res) => {
   try {
     const quote = await quoteService.fetchStockQuote(ticker);
     if (quote === 0) {
-      throw new Error('price equalled 0, probably incorrect ticker')
+      throw new Error('price equalled 0, probably incorrect ticker');
     }
     const position: IPosition = {
       dateCreated: Date.now(),
@@ -58,7 +58,7 @@ route.post('/bear', async (req, res) => {
       price: quote,
       sentiment: Sentiment.bearish,
       ticker: ticker.toUpperCase(),
-    }
+    };
     await positionService.createPosition(position);
     await messageService.sendMessage(
       `${ticker} added as 🐻 position for <@${position.user}>`,

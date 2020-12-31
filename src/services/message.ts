@@ -1,17 +1,23 @@
 import axios from 'axios';
 import { IInterpretMessageValue, meaning } from '../interfaces/IInterpretMessageValue';
 import QuoteService from '../services/quote';
-import { SLACK_URL, SLACK_ACCESS_TOKEN } from '../config';
+import { SLACK_ACCESS_TOKEN } from '../config';
+
+interface IStripeBody {
+  text: string;
+  response_url: string;
+  user_id: string;
+}
 
 interface IMessageService {
-  read(event: any): Promise<boolean>;
+  read(event: IStripeBody): Promise<boolean>;
 }
 
 const quoteService = new QuoteService();
 
 export default class MessageService implements IMessageService {
 
-  async read(event: any): Promise<boolean> {
+  async read(event: IStripeBody): Promise<boolean> {
     const text: string = event.text;
     const interpret: IInterpretMessageValue = this.interpretMessage(text.toLowerCase());
 
@@ -21,7 +27,7 @@ export default class MessageService implements IMessageService {
 
     switch (interpret.meaning) {
       case meaning.stockQuote: {
-        const quote = await quoteService.fetchStockQuote(interpret.value.toLowerCase())
+        const quote = await quoteService.fetchStockQuote(interpret.value.toLowerCase());
         await this.sendMessage(`The price of ${interpret.value} is ${quote}`, 'good', event.response_url);
         break;
       }
@@ -31,7 +37,7 @@ export default class MessageService implements IMessageService {
     }
   }
 
-  async sendBlockMessage(blocks: any[], responseUrl: string): Promise<void> {
+  async sendBlockMessage(blocks: unknown[], responseUrl: string): Promise<void> {
     const resp = await axios.post(responseUrl, {
       response_type: 'in_channel',
       blocks,
