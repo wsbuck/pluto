@@ -8,7 +8,7 @@ const quoteService = new QuoteService();
 const positionService = new PositionService();
 
 route.post('/bull', async (req, res) => {
-  res.status(200);
+  res.statusCode = 200;
   const { user_id, text } = req.body;
 
   if (!text) {
@@ -46,7 +46,7 @@ route.post('/bull', async (req, res) => {
 });
 
 route.post('/bear', async (req, res) => {
-  res.status(200);
+  res.statusCode = 200;
   const { user_id, text } = req.body;
 
   if (!text) {
@@ -84,7 +84,7 @@ route.post('/bear', async (req, res) => {
 });
 
 route.post('/get', async (req, res) => {
-  res.status(200);
+  res.statusCode = 200;
   const { user_id: userId } = req.body;
 
   try {
