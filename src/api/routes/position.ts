@@ -72,7 +72,7 @@ route.post('/get', async (req, res) => {
   const { user_id, response_url: responseUrl, text } = req.body as {[field: string]: string};
 
   try {
-    const userId = text.match(/(?<=<@)\w+(?=>)/)?.pop() || user_id;
+    const userId = text.match(/(?<=<@)\w+(?=|)/)?.pop() || user_id;
     const positions = await positionService.getPositions(userId);
     const bullishPositions = positions.filter(position => position.sentiment === Sentiment.bullish);
     const bearishPositions = positions.filter(position => position.sentiment === Sentiment.bearish);
