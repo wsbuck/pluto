@@ -2,21 +2,16 @@ import { Router } from 'express';
 import IPosition, { Sentiment } from '../../interfaces/IPosition';
 import QuoteService from '../../services/quote';
 import PositionService from '../../services/position';
+import MessageService from '../../services/message';
 
 const route = Router();
 const quoteService = new QuoteService();
 const positionService = new PositionService();
+const messageService = new MessageService();
 
 route.post('/bull', async (req, res) => {
-  res.statusCode = 200;
-  const { user_id, text } = req.body;
-
-  if (!text) {
-    res.json({
-      response_type: 'in_response',
-      text: 'Unable to add stock'
-    });
-  }
+  res.status(200).send('');
+  const { user_id, text, response_url } = req.body;
 
   const ticker = text.split(' ').pop() as string;
 
@@ -30,31 +25,22 @@ route.post('/bull', async (req, res) => {
       ticker: ticker.toUpperCase(),
     }
     await positionService.createPosition(position);
-    res.json({
-      response_type: 'in_channel',
-      text: `${ticker} added as 🐂 position for <@${position.user}>`,
-    });
+
+    await messageService.sendMessage(
+      `${ticker} added as 🐂 position for <@${position.user}>`,
+      'good',
+      response_url,
+    );
   } catch (e) {
     console.error('error', e);
-    res.json({
-      response_type: 'in_response',
-      text: 'Unable to create bullish position'
-    });
-
+    messageService.sendMessage('Unable to create bullish position', 'danger', response_url);
   }
 
 });
 
 route.post('/bear', async (req, res) => {
-  res.statusCode = 200;
-  const { user_id, text } = req.body;
-
-  if (!text) {
-    res.json({
-      response_type: 'in_response',
-      text: 'Unable to add stock'
-    });
-  }
+  res.status(200).send('');
+  const { user_id, text, response_url } = req.body;
 
   const ticker = text.split(' ').pop() as string;
 
@@ -68,89 +54,81 @@ route.post('/bear', async (req, res) => {
       ticker: ticker.toUpperCase(),
     }
     await positionService.createPosition(position);
-    res.json({
-      response_type: 'in_channel',
-      text: `${ticker} added as 🐻 position for <@${position.user}>`,
-    });
+    await messageService.sendMessage(
+      `${ticker} added as 🐻 position for <@${position.user}>`,
+      'good',
+      response_url,
+    );
   } catch (e) {
     console.error('error', e);
-    res.json({
-      response_type: 'in_response',
-      text: 'Unable to create buy position'
-    });
-
+    messageService.sendMessage('Unable to create bearish position', 'danger', response_url);
   }
 
 });
 
 route.post('/get', async (req, res) => {
-  res.statusCode = 200;
-  const { user_id: userId } = req.body;
+  res.status(200).send('');
+
+  const { user_id: userId, response_url: responseUrl } = req.body;
 
   try {
     const positions = await positionService.getPositions(userId);
     const bullishPositions = positions.filter(position => position.sentiment === Sentiment.bullish);
     const bearishPositions = positions.filter(position => position.sentiment === Sentiment.bearish);
-    res.json({
-      response_type: 'in_channel',
-      blocks: [
-        {
+    const blocks = [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `Below are the current recommended *BULLISH* for user <@${userId}>`
+        }
+      },
+      {
+        type: 'divider',
+      },
+      ...bullishPositions.map((position) => {
+        return {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `Below are the current recommended *BULLISh* for user <@${userId}>`
-          }
-        },
-        {
-          type: 'divider',
-        },
-        ...bullishPositions.map((position) => {
-          return {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: `*${position.ticker}*
+            text: `*${position.ticker}*
                 Date Recommended: ${new Date(position.dateCreated).toLocaleString()}
                 Initial Price: $${position.price}
                 Current Price: $${position.currentPrice}
                 Gain / Loss: ${(position.currentPrice - position.price) / position.price}
               `
-            },
-          };
-        }),
-        {
+          },
+        };
+      }),
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `Below are the current recommended *BEARISH* for user <@${userId}>`
+        }
+      },
+      {
+        type: 'divider',
+      },
+      ...bearishPositions.map((position) => {
+        return {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `Below are the current recommended *BEARISH* for user <@${userId}>`
-          }
-        },
-        {
-          type: 'divider',
-        },
-        ...bearishPositions.map((position) => {
-          return {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: `*${position.ticker}*
+            text: `*${position.ticker}*
                 Date Recommended: ${new Date(position.dateCreated).toLocaleString()}
                 Initial Price: $${position.price}
                 Current Price: $${position.currentPrice}
                 Gain / Loss: ${(position.currentPrice - position.price) / position.price}
               `
-            },
-          };
-        }),
-      ]
-    });
+          },
+        };
+      }),
+    ];
+    messageService.sendBlockMessage(blocks, responseUrl);
   } catch (e) {
     console.error('error', e);
-    res.json({
-      response_type: 'in_response',
-      text: 'Unable to get positions'
-    });
-
+    messageService.sendMessage('Unable to get positions', 'danger', responseUrl);
   }
 
 });

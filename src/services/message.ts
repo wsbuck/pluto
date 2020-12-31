@@ -21,9 +21,7 @@ export default class MessageService implements IMessageService {
 
     switch (interpret.meaning) {
       case meaning.stockQuote: {
-        console.log('value', interpret.value);
         const quote = await quoteService.fetchStockQuote(interpret.value.toLowerCase())
-        console.log('quote', quote);
         await this.sendMessage(`The price of ${interpret.value} is ${quote}`, event.channel);
         break;
       }
@@ -31,6 +29,39 @@ export default class MessageService implements IMessageService {
         return;
       }
     }
+  }
+
+  async sendBlockMessage(blocks: any[], responseUrl: string): Promise<void> {
+    const resp = await axios.post(responseUrl, {
+      response_type: 'in_channel',
+      blocks,
+    }, {
+      headers: {
+        'Authorization': `Bearer ${SLACK_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (resp.status !== 200) {
+      throw new Error(resp.data);
+    }
+
+  }
+
+  async sendMessage(message: string, color: string, responseUrl: string): Promise<boolean> {
+    const payload = {
+      response_type: 'in_channel',
+      text: message,
+      color,
+    };
+
+    const resp = await axios.post(responseUrl, payload, {
+      headers: {
+        'Authorization': `Bearer ${SLACK_ACCESS_TOKEN}`,
+        'Content-type': 'application/json', 
+      },
+    });
+    return resp.data?.ok;
   }
 
   private interpretMessage(message: string): IInterpretMessageValue {
@@ -44,21 +75,5 @@ export default class MessageService implements IMessageService {
       return { understand: false };
     }
     return { understand: false };
-  }
-
-  private async sendMessage(message: string, channel: string): Promise<boolean> {
-    const payload = {
-      channel,
-      response_type: 'in_channel',
-      text: message,
-    };
-
-    const resp = await axios.post(`${SLACK_URL}/chat.postMessage`, payload, {
-      headers: {
-        'Authorization': `Bearer ${SLACK_ACCESS_TOKEN}`,
-        'Content-type': 'application/json', 
-      },
-    });
-    return resp.data?.ok;
   }
 }
