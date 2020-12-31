@@ -17,6 +17,9 @@ route.post('/bull', async (req, res) => {
 
   try {
     const quote = await quoteService.fetchStockQuote(ticker);
+    if (quote === 0) {
+      throw new Error('price equalled 0, probably incorrect ticker')
+    }
     const position: IPosition = {
       dateCreated: Date.now(),
       user: user_id,
@@ -46,6 +49,9 @@ route.post('/bear', async (req, res) => {
 
   try {
     const quote = await quoteService.fetchStockQuote(ticker);
+    if (quote === 0) {
+      throw new Error('price equalled 0, probably incorrect ticker')
+    }
     const position: IPosition = {
       dateCreated: Date.now(),
       user: user_id,
