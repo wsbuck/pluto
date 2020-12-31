@@ -22,7 +22,7 @@ export default class MessageService implements IMessageService {
     switch (interpret.meaning) {
       case meaning.stockQuote: {
         const quote = await quoteService.fetchStockQuote(interpret.value.toLowerCase())
-        await this.sendMessage(`The price of ${interpret.value} is ${quote}`, event.channel);
+        await this.sendMessage(`The price of ${interpret.value} is ${quote}`, 'good', event.response_url);
         break;
       }
       default: {
