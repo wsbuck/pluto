@@ -71,23 +71,30 @@ route.post('/get', async (req, res) => {
 
   const { user_id, response_url: responseUrl, text } = req.body as {[field: string]: string};
 
+  if (!user_id || !responseUrl) {
+    return;
+  }
+
   try {
-    const userId = text.match(/(?<=<@)\w+(?=|)/)?.pop() || user_id;
+    const userId = text?.match(/(?<=<@)\w+(?=|)/)?.pop() || user_id;
     const positions = await positionService.getPositions(userId);
     const bullishPositions = positions.filter(position => position.sentiment === Sentiment.bullish);
     const bearishPositions = positions.filter(position => position.sentiment === Sentiment.bearish);
     const blocks = [
-      {
+      bullishPositions.length > 0 && {
         type: 'section',
         text: {
           type: 'mrkdwn',
           text: `Below are the current recommended *BULLISH* for user <@${userId}>`
         }
       },
-      {
+      bullishPositions.length > 0 && {
         type: 'divider',
       },
       ...bullishPositions.map((position) => {
+        const gainPercentage = (
+          (position.currentPrice - position.price) / position.price * 100
+        ).toFixed(2);
         return {
           type: 'section',
           text: {
@@ -96,22 +103,26 @@ route.post('/get', async (req, res) => {
                 Date Recommended: ${new Date(position.dateCreated).toDateString()}
                 Initial Price: $${position.price}
                 Current Price: $${position.currentPrice}
-                Gain / Loss: ${(position.currentPrice - position.price) / position.price * 100}%
+                Gain / Loss: ${gainPercentage}%
+                color: ${Number.parseFloat(gainPercentage) > 0 ? 'good' : 'danger'}
               `
           },
         };
       }),
-      {
+      bearishPositions.length > 0 && {
         type: 'section',
         text: {
           type: 'mrkdwn',
           text: `Below are the current recommended *BEARISH* for user <@${userId}>`
         }
       },
-      {
+      bearishPositions.length > 0 && {
         type: 'divider',
       },
       ...bearishPositions.map((position) => {
+        const gainPercentage = (
+          (position.currentPrice - position.price) / position.price * 100
+        ).toFixed(2);
         return {
           type: 'section',
           text: {
@@ -120,7 +131,8 @@ route.post('/get', async (req, res) => {
                 Date Recommended: ${new Date(position.dateCreated).toDateString()}
                 Initial Price: $${position.price}
                 Current Price: $${position.currentPrice}
-                Gain / Loss: ${(position.currentPrice - position.price) / position.price * 100}%
+                Gain / Loss: ${gainPercentage}%
+                color: ${Number.parseFloat(gainPercentage) > 0 ? 'good' : 'danger'}
               `
           },
         };
