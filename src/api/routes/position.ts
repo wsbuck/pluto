@@ -72,7 +72,7 @@ route.post('/get', async (req, res) => {
   const { user_id: userId, response_url: responseUrl, text } = req.body;
 
   try {
-    const user = text || userId;
+    const user = text || `<@userId>`;
     const positions = await positionService.getPositions(user);
     const bullishPositions = positions.filter(position => position.sentiment === Sentiment.bullish);
     const bearishPositions = positions.filter(position => position.sentiment === Sentiment.bearish);
@@ -81,7 +81,7 @@ route.post('/get', async (req, res) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `Below are the current recommended *BULLISH* for user <@${user}>`
+          text: `Below are the current recommended *BULLISH* for user ${user}`
         }
       },
       {
@@ -105,7 +105,7 @@ route.post('/get', async (req, res) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `Below are the current recommended *BEARISH* for user <@${user}>`
+          text: `Below are the current recommended *BEARISH* for user ${user}`
         }
       },
       {
