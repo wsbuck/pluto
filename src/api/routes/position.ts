@@ -105,12 +105,12 @@ route.post('/get', async (req, res) => {
           type: 'section',
           text: {
             type: 'mrkdwn',
+            color: Number.parseFloat(gainPercentage) > 0 ? 'good' : 'danger',
             text: `*${position.ticker}*
                 Date Recommended: ${new Date(position.dateCreated).toDateString()}
                 Initial Price: $${position.price}
                 Current Price: $${position.currentPrice}
                 Gain / Loss: ${gainPercentage}%
-                color: ${Number.parseFloat(gainPercentage) > 0 ? 'good' : 'danger'}
               `
           },
         };
@@ -131,6 +131,7 @@ route.post('/get', async (req, res) => {
         ).toFixed(2);
         return {
           type: 'section',
+          color: Number.parseFloat(gainPercentage) > 0 ? 'good' : 'danger',
           text: {
             type: 'mrkdwn',
             text: `*${position.ticker}*
@@ -138,12 +139,14 @@ route.post('/get', async (req, res) => {
                 Initial Price: $${position.price}
                 Current Price: $${position.currentPrice}
                 Gain / Loss: ${gainPercentage}%
-                color: ${Number.parseFloat(gainPercentage) > 0 ? 'good' : 'danger'}
               `
           },
         };
       }),
     ];
+    if (blocks.length === 0) {
+      blocks.push({ type: 'section', color: 'warning', text: { type: 'mrkdwn', text: 'No Positions'}});
+    }
     messageService.sendBlockMessage(blocks, responseUrl);
   } catch (e) {
     console.error('error', e);

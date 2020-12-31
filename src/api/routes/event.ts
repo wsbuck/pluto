@@ -8,7 +8,7 @@ route.post('/', async (req, res) => {
   res.json({}).status(200);
   const { event, challenge } = req.body;
 
-  switch (event.type) {
+  switch (event?.type) {
     case 'app_mention': {
       try {
         messageService.read(event);
