@@ -93,7 +93,7 @@ route.post('/get', async (req, res) => {
           text: {
             type: 'mrkdwn',
             text: `*${position.ticker}*
-                Date Recommended: ${new Date(position.dateCreated).toLocaleString()}
+                Date Recommended: ${new Date(position.dateCreated).toDateString()}
                 Initial Price: $${position.price}
                 Current Price: $${position.currentPrice}
                 Gain / Loss: ${(position.currentPrice - position.price) / position.price * 100}%
@@ -117,7 +117,7 @@ route.post('/get', async (req, res) => {
           text: {
             type: 'mrkdwn',
             text: `*${position.ticker}*
-                Date Recommended: ${new Date(position.dateCreated).toLocaleString()}
+                Date Recommended: ${new Date(position.dateCreated).toDateString()}
                 Initial Price: $${position.price}
                 Current Price: $${position.currentPrice}
                 Gain / Loss: ${(position.currentPrice - position.price) / position.price * 100}%
